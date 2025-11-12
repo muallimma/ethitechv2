@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EthiTech - Dijital Etik Simülasyonu</title>
+  <style>
+    :root {
+      --primary: #2c3e50;
+      --secondary: #3498db;
+      --success: #27ae60;
+      --warning: #f39c12;
+      --danger: #e74c3c;
+      --light: #ecf0f1;
+      --dark: #2c3e50;
+      --glass: rgba(255, 255, 255, 0.1);
+      --glass-border: rgba(255, 255, 255, 0.2);
+    }
+
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #1a2a3a, #2c3e50);
+      color: var(--light);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container { max-width: 1300px; margin: 0 auto; }
+
+    header {
+      text-align: center; margin-bottom: 30px; padding: 25px;
+      background: var(--glass); border-radius: 18px;
+      backdrop-filter: blur(12px); border: 1px solid var(--glass-border);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    h1 { font-size: 2.8rem; margin-bottom: 8px; background: linear-gradient(90deg, #3498db, #27ae60); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { font-size: 1.3rem; opacity: 0.9; }
+
+    .game-container {
+      display: grid; grid-template-columns: 340px 1fr; gap: 25px; min-height: 75vh;
+    }
+
+    .sidebar {
+      background: var(--glass); border-radius: 18px; padding: 25px;
+      backdrop-filter: blur(12px); border: 1px solid var(--glass-border);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+
+    .player-name { font-size: 1.4rem; font-weight: bold; margin-bottom: 20px; color: #fff; text-align: center; }
+
+    .stat-item {
+      margin-bottom: 18px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 10px;
+    }
+    .stat-label { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.95rem; }
+    .stat-bar { height: 10px; background: rgba(255,255,255,0.2); border-radius: 5px; overflow: hidden; }
+    .stat-fill { height: 100%; border-radius: 5px; transition: width 0.6s ease; }
+
+    .main-content {
+      background: var(--glass); border-radius: 18px; padding: 30px;
+      backdrop-filter: blur(12px); border: 1px solid var(--glass-border);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+
+    .progress-container { margin-bottom: 25px; }
+    .progress-label { font-size: 1.1rem; margin-bottom: 8px; color: #bdc3c7; }
+    .progress-bar { height: 14px; background: rgba(255,255,255,0.2); border-radius: 7px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, #3498db, #27ae60); width: 0%; transition: width 0.6s ease; }
+
+    .case-title {
+      font-size: 1.9rem; margin-bottom: 15px; color: #fff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .case-description {
+      background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px;
+      line-height: 1.7; margin-bottom: 25px; border-left: 4px solid var(--secondary);
+    }
+
+    .options-grid {
+      display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 20px;
+    }
+
+    .option {
+      background: rgba(255,255,255,0.1); border: 2px solid transparent;
+      border-radius: 14px; padding: 20px; cursor: pointer;
+      transition: all 0.3s ease; position: relative; overflow: hidden;
+    }
+
+    .option::before {
+      content: attr(data-letter); position: absolute; top: 12px; left: 12px;
+      font-weight: bold; font-size: 1.3rem; color: rgba(255,255,255,0.3);
+    }
+
+    .option:hover {
+      background: rgba(255,255,255,0.15); border-color: var(--secondary);
+      transform: translateY(-4px); box-shadow: 0 8px 20px rgba(52,152,219,0.3);
+    }
+
+    .option.selected {
+      border-color: var(--success); background: rgba(39,174,96,0.15);
+      box-shadow: 0 0 20px rgba(39,174,96,0.3);
+    }
+
+    .option-text {
+      margin-left: 40px; font-size: 1.05rem; line-height: 1.6;
+    }
+
+    .next-btn {
+      background: linear-gradient(90deg, #27ae60, #2ecc71); color: white;
+      border: none; padding: 14px 32px; border-radius: 12px; font-weight: bold;
+      cursor: pointer; font-size: 1.1rem; margin-top: 20px; width: 100%;
+      transition: all 0.3s; display: none;
+    }
+
+    .next-btn:hover {
+      transform: translateY(-3px); box-shadow: 0 8px 20px rgba(39,174,96,0.4);
+    }
+
+    .final-screen {
+      text-align: center; animation: fadeIn 0.8s ease;
+    }
+
+    .final-stats {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; margin: 30px 0;
+    }
+
+    .final-stat {
+      background: rgba(255,255,255,0.1); padding: 20px; border-radius: 14px;
+      border: 1px solid var(--glass-border);
+    }
+
+    .final-stat-value {
+      font-size: 2.2rem; font-weight: bold; background: linear-gradient(90deg, #3498db, #27ae60);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    .analysis {
+      background: rgba(255,255,255,0.05); padding: 25px; border-radius: 14px;
+      margin: 25px 0; text-align: left; border-left: 4px solid var(--warning);
+    }
+
+    .suggestion {
+      background: rgba(255,255,255,0.08); padding: 15px; border-radius: 10px;
+      margin: 12px 0; border-left: 3px solid var(--secondary);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 992px) {
+      .game-container { grid-template-columns: 1fr; }
+      .sidebar { order: 2; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <h1>EthiTech</h1>
+    <p class="subtitle">Dijital Etik Danışmanı Simülasyonu</p>
+  </header>
+
+  <div class="game-container">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="player-name" id="player-name">Etikçi</div>
+
+      <div class="stat-item">
+        <div class="stat-label"><span>Etik Puanı</span><span id="etik">50</span></div>
+        <div class="stat-bar"><div class="stat-fill" style="background:#27ae60; width:50%"></div></div>
+      </div>
+
+      <div class="stat-item">
+        <div class="stat-label"><span>Şirket Kârı</span><span id="kar">50</span></div>
+        <div class="stat-bar"><div class="stat-fill" style="background:#3498db; width:50%"></div></div>
+      </div>
+
+      <div class="stat-item">
+        <div class="stat-label"><span>Memnuniyet</span><span id="mem">50</span></div>
+        <div class="stat-bar"><div class="stat-fill" style="background:#f39c12; width:50%"></div></div>
+      </div>
+
+      <div class="progress-container" style="margin-top:30px;">
+        <div class="progress-label">İlerleme: <span id="progress-text">0/5</span></div>
+        <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+
+      <!-- YÖNERGE -->
+      <div id="intro" style="display:block;">
+        <h2 style="color:#fff; text-align:center; margin-bottom:20px;">Hoş Geldin, Etik Danışmanı!</h2>
+        <div style="background:rgba(255,255,255,0.1); padding:25px; border-radius:14px; border-left:4px solid #3498db;">
+          <h3 style="margin-bottom:15px; color:#fff;">OYUN KURALLARI</h3>
+          <ol style="text-align:left; line-height:1.8; color:#ddd;">
+            <li>5 farklı dijital etik vaka ile karşılaşacaksın.</li>
+            <li>Her vakada <strong>3 gerçek seçenek</strong> olacak.</li>
+            <li>Seçimlerin <strong>Etik, Kâr, Memnuniyet</strong> puanlarını etkiler.</li>
+            <li>Vakalar <strong>sırayla</strong> açılır. Geri dönüş yok.</li>
+            <li>En sonda <strong>detaylı geri bildirim</strong> alacaksın.</li>
+            <li><strong>Hedef:</strong> En yüksek ortalama puanı al!</li>
+          </ol>
+        </div>
+        <input type="text" id="nameInput" placeholder="Adını Gir" style="width:100%; padding:14px; margin:20px 0; border-radius:12px; border:none; font-size:1.1rem;">
+        <button onclick="startGame()" class="next-btn" style="display:block; background:linear-gradient(90deg,#3498db,#2980b9);">OYUNA BAŞLA</button>
+      </div>
+
+      <!-- VAKA EKRANI -->
+      <div id="case-screen" style="display:none;">
+        <h2 class="case-title" id="case-title"></h2>
+        <div class="case-description" id="case-problem"></div>
+        <div class="options-grid" id="options"></div>
+        <button id="next-btn" class="next-btn" onclick="nextCase()">SONRAKİ VAKA →</button>
+      </div>
+
+      <!-- FİNAL EKRANI -->
+      <div id="final-screen" class="final-screen" style="display:none;">
+        <h2>Tebrikler, <span id="final-name" style="background:linear-gradient(90deg,#3498db,#27ae60);-webkit-background-clip:text;-webkit-text-fill-color:transparent;"></span>!</h2>
+        <p style="margin:20px 0; font-size:1.2rem;">Tüm vakaları tamamladın. İşte performansın:</p>
+
+        <div class="final-stats">
+          <div class="final-stat">
+            <div>Etik</div>
+            <div class="final-stat-value" id="final-etik">50</div>
+          </div>
+          <div class="final-stat">
+            <div>Kâr</div>
+            <div class="final-stat-value" id="final-kar">50</div>
+          </div>
+          <div class="final-stat">
+            <div>Mem</div>
+            <div class="final-stat-value" id="final-mem">50</div>
+          </div>
+        </div>
+
+        <div class="analysis">
+          <h3 style="margin-bottom:15px; color:#fff;">Detaylı Analiz</h3>
+          <div id="analysis-content"></div>
+        </div>
+
+        <button onclick="restartGame()" class="next-btn" style="background:linear-gradient(90deg,#95a5a6,#7f8c8d); margin-top:20px;">YENİDEN OYNA</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  let player = { name: "", etik: 50, kar: 50, mem: 50, decisions: [], currentCase: 0 };
+  const totalCases = 5;
+
+  const cases = [
+    {
+      title: "DataSafe Sosyal Medya",
+      problem: "Kullanıcıların özel mesajları reklam hedefleme için izinsiz kullanılıyor.",
+      options: [
+        { text: "Veri kullanımını tamamen durdur (onay zorunlu)", kar: -12, etik: +28, mem: +18 },
+        { text: "Sadece anonimleştirilmiş veri kullan", kar: +3, etik: +16, mem: +12 },
+        { text: "Mevcut sistemi devam ettir", kar: +18, etik: -32, mem: -22 }
+      ],
+      feedback: ["Güçlü etik duruş!", "Dengeli çözüm.", "Güven kaybı riski."]
+    },
+    {
+      title: "AI Hire İşe Alım",
+      problem: "Yapay zeka kadın adaylara sistematik olarak düşük puan veriyor.",
+      options: [
+        { text: "Algoritmayı sıfırdan yeniden eğit", kar: -18, etik: +38, mem: +22 },
+        { text: "İnsan denetçisi ekle", kar: -6, etik: +22, mem: +15 },
+        { text: "Sorunu görmezden gel", kar: +12, etik: -35, mem: -25 }
+      ],
+      feedback: ["Adalet sağlandı.", "Pratik çözüm.", "Cinsiyet ayrımcılığı."]
+    },
+    {
+      title: "Deepfake Reklam Kampanyası",
+      problem: "Bir marka, ünlü birinin deepfake videosuyla reklam yapıyor. İzin alınmadı.",
+      options: [
+        { text: "Reklamı tamamen durdur", kar: -20, etik: +40, mem: +25 },
+        { text: "İzin alarak devam et", kar: -5, etik: +18, mem: +10 },
+        { text: "İzin almadan devam et", kar: +15, etik: -30, mem: -20 }
+      ],
+      feedback: ["Etik zafer!", "Güvenli yol.", "Yasal sorun riski."]
+    },
+    {
+      title: "Çocuklar için Oyun Uygulaması",
+      problem: "Uygulama, 13 yaş altı çocuklardan veri topluyor ama ebeveyn onayı yok.",
+      options: [
+        { text: "Tüm veri toplamayı durdur", kar: -15, etik: +35, mem: +20 },
+        { text: "Ebeveyn onayı zorunlu kıl", kar: -3, etik: +15, mem: +8 },
+        { text: "Devam et", kar: +10, etik: -28, mem: -18 }
+      ],
+      feedback: ["COPPA uyumlu.", "Güvenli.", "Yasal ceza riski."]
+    },
+    {
+      title: "Sağlık Verisi Paylaşımı",
+      problem: "Bir sağlık uygulaması, kullanıcı verilerini sigorta şirketine satıyor.",
+      options: [
+        { text: "Veri satışını tamamen durdur", kar: -25, etik: +45, mem: +30 },
+        { text: "Sadece anonim veri paylaş", kar: -8, etik: +20, mem: +12 },
+        { text: "Tüm veriyi sat", kar: +20, etik: -40, mem: -28 }
+      ],
+      feedback: ["HIPAA uyumlu.", "Güvenli.", "Büyük skandal."]
+    }
+  ];
+
+  function startGame() {
+    player.name = document.getElementById('nameInput').value.trim() || "Etikçi";
+    document.getElementById('player-name').textContent = player.name;
+    document.getElementById('intro').style.display = 'none';
+    loadCase(0);
+  }
+
+  function loadCase(index) {
+    if (index >= totalCases) { showFinal(); return; }
+    player.currentCase = index;
+    const c = cases[index];
+    document.getElementById('progress-text').textContent = `${index}/${totalCases}`;
+    document.getElementById('progress-fill').style.width = `${(index / totalCases) * 100}%`;
+    updateStats();
+    document.getElementById('case-title').textContent = c.title;
+    document.getElementById('case-problem').textContent = c.problem;
+    const opts = document.getElementById('options');
+    opts.innerHTML = "";
+    c.options.forEach((opt, i) => {
+      const div = document.createElement('div');
+      div.className = 'option';
+      div.setAttribute('data-letter', String.fromCharCode(65 + i));
+      div.innerHTML = `<div class="option-text">${opt.text}</div>`;
+      div.onclick = () => chooseOption(index, i);
+      opts.appendChild(div);
+    });
+    document.getElementById('next-btn').style.display = 'none';
+    document.getElementById('case-screen').style.display = 'block';
+  }
+
+  function chooseOption(caseIndex, optIndex) {
+    document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+    event.target.closest('.option').classList.add('selected');
+    const opt = cases[caseIndex].options[optIndex];
+    player.kar = Math.max(0, Math.min(100, player.kar + opt.kar));
+    player.etik = Math.max(0, Math.min(100, player.etik + opt.etik));
+    player.mem = Math.max(0, Math.min(100, player.mem + opt.mem));
+    player.decisions[caseIndex] = optIndex;
+    document.getElementById('next-btn').style.display = 'block';
+  }
+
+  function nextCase() { loadCase(player.currentCase + 1); }
+
+  function updateStats() {
+    document.getElementById('etik').textContent = player.etik;
+    document.getElementById('kar').textContent = player.kar;
+    document.getElementById('mem').textContent = player.mem;
+    document.querySelectorAll('.stat-fill')[0].style.width = `${player.etik}%`;
+    document.querySelectorAll('.stat-fill')[1].style.width = `${player.kar}%`;
+    document.querySelectorAll('.stat-fill')[2].style.width = `${player.mem}%`;
+  }
+
+  function showFinal() {
+    document.getElementById('case-screen').style.display = 'none';
+    document.getElementById('final-name').textContent = player.name;
+    document.getElementById('final-etik').textContent = player.etik;
+    document.getElementById('final-kar').textContent = player.kar;
+    document.getElementById('final-mem').textContent = player.mem;
+
+    let analysis = `<p><strong>Toplam:</strong> ${(player.etik + player.kar + player.mem)} | <strong>Ortalama:</strong> ${((player.etik + player.kar + player.mem)/3).toFixed(1)}</p><hr>`;
+
+    player.decisions.forEach((choice, i) => {
+      const c = cases[i]; const opt = c.options[choice];
+      const best = c.options.reduce((a,b) => (a.etik + a.mem > b.etik + b.mem) ? a : b);
+      analysis += `<div class="suggestion"><strong>${c.title}</strong><br>`;
+      analysis += `Seçtin: "${opt.text}" → Etik: <strong>${opt.etik > 0 ? '+' : ''}${opt.etik}</strong> | Mem: <strong>${opt.mem > 0 ? '+' : ''}${opt.mem}</strong><br>`;
+      if (opt.etik + opt.mem < best.etik + best.mem) {
+        analysis += `<em>Öneri: "${best.text}" daha iyi olurdu.</em>`;
+      } else {
+        analysis += `<em>Mükemmel!</em>`;
+      }
+      analysis += `</div>`;
+    });
+
+    document.getElementById('analysis-content').innerHTML = analysis;
+    document.getElementById('final-screen').style.display = 'block';
+  }
+
+  function restartGame() {
+    if (confirm("Tüm ilerlemen silinecek. Emin misin?")) {
+      location.reload();
+    }
+  }
+</script>
+
+</body>
+</html>
